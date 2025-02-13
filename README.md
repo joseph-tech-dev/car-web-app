@@ -144,9 +144,9 @@ docker run -p 8000:8000 car-dealership-app
 /scs/register/
 {
     "first_name":"John",
-    "last_name" :"Dow",
+    "last_name" :"hire",
     "username": "john_doe",
-    "email": "johndoe@example.com",
+    "email": "john@hotwheel.com",
     "password": "securepassword123",
     "phone": "+123456789"
 }
