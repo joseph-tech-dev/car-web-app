@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import User,Car, CarImage, Wishlist, CarComparison, Review, Message, SearchHistory, Transaction
@@ -71,7 +72,7 @@ class LogoutView(APIView):
         return response
 
 class CarListCreateAPIView(APIView):
-    permission_classes = [IsSuperuserOrReadOnly]
+    #permission_classes = [IsSuperuserOrReadOnly]
     
     def get(self, request):
         cars = Car.objects.all()
@@ -86,7 +87,7 @@ class CarListCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CarDetailAPIView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    #permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request, pk):
         car = get_object_or_404(Car, pk=pk)
@@ -107,7 +108,7 @@ class CarDetailAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CarImageAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     
     def get(self, request):
         images = CarImage.objects.all()
@@ -122,7 +123,7 @@ class CarImageAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class WishlistAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     
     def get(self, request):
         wishlist = Wishlist.objects.filter(user=request.user)
@@ -137,7 +138,7 @@ class WishlistAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CarComparisonAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = CarComparisonSerializer(data=request.data)
         if serializer.is_valid():
@@ -146,7 +147,7 @@ class CarComparisonAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ReviewAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = ReviewSerializer(data=request.data)
         if serializer.is_valid():
@@ -155,21 +156,47 @@ class ReviewAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MessageAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        messages = Message.objects.filter(receiver=request.user)
-        serializer = MessageSerializer(messages, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
+    #permission_classes = [IsAuthenticated]
+
     def post(self, request):
+        """Send a new message"""
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(sender=request.user)
+            serializer.save(sender=request.user)  # Sender is always the logged-in user
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def post(self, request):
+        "Send a message to another user"
+        serializer = MessageSerializer(data=request.data)
+        
+        # To be removed
+        user = request.data.get('sender')
+        sender = User.objects.get(id=user)
+
+        if serializer.is_valid():
+            #serializer.save(sender=request.user)
+            serializer.save(sender=sender)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ChatHistoryAPIView(APIView):
+    #permission_classes = [IsAuthenticated]
+
+    def get(self, request, receiver_id):
+        """Retrieve messages between authenticated user and a specific receiver"""
+        sender = request.user
+        messages = Message.objects.filter(
+            Q(sender=sender, receiver_id=receiver_id) | 
+            Q(sender_id=receiver_id, receiver=sender)
+        ).order_by("timestamp")
+
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class SearchHistoryAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     
     def get(self, request):
         search_history = SearchHistory.objects.filter(user=request.user)
@@ -184,7 +211,7 @@ class SearchHistoryAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CarRecommendationAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     
     def get(self, request):
         # AI/ML logic to recommend cars based on search history
@@ -192,7 +219,7 @@ class CarRecommendationAPIView(APIView):
         return Response(recommended_cars, status=status.HTTP_200_OK)
 
 class TransactionAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = TransactionSerializer(data=request.data)

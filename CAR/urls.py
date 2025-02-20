@@ -13,7 +13,8 @@ from .views import(
     TransactionAPIView,
     RegisterUserAPIView,
     LoginView,
-    LogoutView
+    LogoutView,
+    ChatHistoryAPIView
     )
 
 urlpatterns = [
@@ -29,6 +30,7 @@ urlpatterns = [
     path('scs/messages/', MessageAPIView.as_view(), name='messages'),
     path('scs/search-history/',SearchHistoryAPIView.as_view(), name='search-history'),
     path('scs/transactions/',TransactionAPIView.as_view(), name='transactions'),
+    path('scs/chat-history/',ChatHistoryAPIView.as_view(), name='chat-history'),
 ]
 
 

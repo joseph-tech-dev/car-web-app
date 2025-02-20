@@ -59,8 +59,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'receiver', 'subject', 'message', 'created_at', 'read_at']
-        read_only_fields = ['id', 'sender', 'created_at', 'read_at']
+        fields = ['id', 'sender', 'receiver','content', 'timestamp']
+        read_only_fields = ['id', 'created_at', 'read_at']
 
 
 class SearchHistorySerializer(serializers.ModelSerializer):

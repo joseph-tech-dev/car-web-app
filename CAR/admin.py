@@ -20,7 +20,7 @@ admin.site.site_header = _("HotwheelsHQ")
 
 class UserAdmin(admin.ModelAdmin):
     model = User
-    list_display = ('username', 'first_name','last_name','role', 'phone','email', 'profile_image')
+    list_display = ('id','username', 'first_name','last_name','role', 'phone','email', 'profile_image')
 admin.site.register(User, UserAdmin)
 
 class CarAdmin(admin.ModelAdmin):

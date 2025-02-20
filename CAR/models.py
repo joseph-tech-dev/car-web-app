@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
+
 # User Model (Extending Django's default User)
 class User(AbstractUser):
     ROLE_CHOICES = [
