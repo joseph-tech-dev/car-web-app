@@ -128,7 +128,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 JAZZMIN_SETTINGS = {
       "topmenu_links" : [
-            {"name": "Support", "url": "https://github.com/joseph-tech-dev/car-web-app#"}
+            {"name": "Support", "url": "https://github.com/joseph-tech-dev/car-web-app#","new_window": True}
       ],
       "copyright": "HotwheelsHQ",
       "site_title": "HotwheelsHQ",
