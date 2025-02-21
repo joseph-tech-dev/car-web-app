@@ -16,6 +16,9 @@ from .views import(
     LogoutView,
     ChatHistoryAPIView
     )
+from .views import InitiatePaymentAPIView, PaymentSuccessAPIView, PaymentFailureAPIView
+
+
 
 urlpatterns = [
     path('scs/register/', RegisterUserAPIView.as_view(), name='register'),
@@ -31,6 +34,11 @@ urlpatterns = [
     path('scs/search-history/',SearchHistoryAPIView.as_view(), name='search-history'),
     path('scs/transactions/',TransactionAPIView.as_view(), name='transactions'),
     path('scs/chat-history/',ChatHistoryAPIView.as_view(), name='chat-history'),
+
+    # Paypal Paymeny
+    path("payment/paypal/", InitiatePaymentAPIView.as_view(), name="paypal-payment"),
+    path("payment/success/", PaymentSuccessAPIView.as_view(), name="payment-success"),
+    path("payment/failure/", PaymentFailureAPIView.as_view(), name="payment-cancel"),
 ]
 
 

@@ -24,8 +24,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'CAR',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'paypal.standard.ipn'
 ]
+
+# PayPal Settings
+PAYPAL_RECEIVER_EMAIL = "your-paypal-business-email@example.com"
+PAYPAL_TEST = True  # Change to False in production
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

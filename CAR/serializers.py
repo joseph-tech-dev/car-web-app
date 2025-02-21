@@ -24,14 +24,14 @@ class RegisterPostSerializer(serializers.ModelSerializer):
 class CarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Car
-        fields = ['id', 'dealer', 'make', 'model', 'year', 'price', 'mileage', 'condition', 'transmission', 'fuel_type', 'color', 'description', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'dealer', 'created_at', 'updated_at']
+        fields = ['car_id', 'dealer', 'make', 'model', 'year', 'price', 'mileage', 'condition', 'transmission', 'fuel_type', 'color', 'description', 'created_at', 'updated_at']
+        read_only_fields = ['car_id', 'dealer', 'created_at', 'updated_at']
 
 
 class CarImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarImage
-        fields = ['id', 'car', 'image', 'image_type']
+        fields = ['id', 'car_id', 'image', 'image_type']
         read_only_fields = ['id']
 
 
@@ -59,8 +59,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'receiver','content', 'timestamp']
-        read_only_fields = ['id', 'created_at', 'read_at']
+        fields = ['message_id', 'sender', 'receiver','content', 'timestamp']
+        read_only_fields = ['message_id', 'created_at', 'read_at']
 
 
 class SearchHistorySerializer(serializers.ModelSerializer):
@@ -73,5 +73,5 @@ class SearchHistorySerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ['id', 'buyer', 'car', 'price', 'created_at']
-        read_only_fields = ['id', 'buyer', 'created_at']
+        fields = ['transaction_id', 'buyer', 'car', 'price', 'created_at']
+        read_only_fields = ['transaction_id', 'buyer', 'created_at']

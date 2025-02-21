@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-
+import uuid
 
 # User Model (Extending Django's default User)
 class User(AbstractUser):
@@ -21,6 +21,7 @@ class User(AbstractUser):
 
 # Car Model
 class Car(models.Model):
+    car_id = models.CharField(primary_key=True, max_length=7, editable=False)
     FUEL_CHOICES = [
         ('petrol', 'Petrol'),
         ('diesel', 'Diesel'),
@@ -51,6 +52,10 @@ class Car(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at=(models.DateTimeField(auto_now=True))
 
+    def save(self, *args, **kwargs):
+        if not self.car_id:
+            self.car_id = f"CID-{str(uuid.uuid4()).upper()[:7]}"
+        return super().save(*args,**kwargs)
     def __str__(self):
         return f"{self.make} {self.model} ({self.year})"
 
@@ -105,16 +110,21 @@ class Review(models.Model):
 
 # Messaging System (Buyer to Dealer)
 class Message(models.Model):
+    message_id = models.CharField(primary_key=True, max_length=7, editable=False)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     car = models.ForeignKey(Car, on_delete=models.CASCADE, blank=True, null=True)  # Optional: Message related to a car
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.message_id:
+            self.message_id = f'MSG-{str(uuid.uuid4()).upper()[:7]}'
+        return super().save(*args,**kwargs)
     def __str__(self):
         return f"Message from {self.sender.username} to {self.receiver.username}"
 
-# AI-Based Search History
+# User search history
 class SearchHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     search_query = models.CharField(max_length=255)
@@ -125,6 +135,7 @@ class SearchHistory(models.Model):
 
 # Transactions (Purchase History)
 class Transaction(models.Model):
+    transaction_id = models.CharField(primary_key=True, max_length=7, editable=False)
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('completed', 'Completed'),
@@ -137,9 +148,13 @@ class Transaction(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.transaction_id:
+            self.transaction_id = f"TS-{str(uuid.uuid4()).upper()[:7]}"
+        return super().save(*args,**kwargs)
+    
     def __str__(self):
-        return f"Transaction by {self.buyer.username} for {self.car.make} {self.car.model} - {self.status}"
-
+        return f"{self.buyer.username} - {self.amount}"
 # Advertisement & Featured Listings
 class Advertisement(models.Model):
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name="advertisements")

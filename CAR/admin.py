@@ -25,7 +25,7 @@ admin.site.register(User, UserAdmin)
 
 class CarAdmin(admin.ModelAdmin):
     model = Car
-    list_display = ('make', 'model', 'year', 'color', 'price', 'mileage', 'fuel_type', 'transmission', 'condition')
+    list_display = ('car_id', 'make', 'model', 'year', 'color', 'price', 'mileage', 'fuel_type', 'transmission', 'condition')
 admin.site.register(Car,CarAdmin)
 
 class CarImageAdmin(admin.ModelAdmin):
@@ -60,5 +60,5 @@ admin.site.register(SearchHistory, SearchHistoryAdmin)
 
 class TransactionAdmin(admin.ModelAdmin):
     model = Transaction
-    list_display = ('buyer', 'car', 'price', 'status')
-admin.site.register(Transaction)
+    list_display = ('buyer', 'car','amount','status')
+admin.site.register(Transaction,TransactionAdmin)
