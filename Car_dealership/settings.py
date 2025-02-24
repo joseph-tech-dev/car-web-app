@@ -32,12 +32,25 @@ INSTALLED_APPS = [
 PAYPAL_RECEIVER_EMAIL = "your-paypal-business-email@example.com"
 PAYPAL_TEST = True  # Change to False in production
 
+
+#CORS_ALLOW_ALL_ORIGINS = True #to be changed
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "Authorization",
+    "Content-Type",
+]
 ALLOWED_HOSTS = [
     '40d4-41-89-243-5.ngrok-free.app',
     '127.0.0.1',
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",  # Add your frontend URL here
+]
+
 CSRF_TRUSTED_ORIGINS = [
-    'https://40d4-41-89-243-5.ngrok-free.app'
+    'https://40d4-41-89-243-5.ngrok-free.app',
+    "http://127.0.0.1:3000",
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -56,8 +69,8 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     "corsheaders.middleware.CorsMiddleware",
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

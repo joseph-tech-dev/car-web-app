@@ -25,6 +25,7 @@ from .permissions import IsSuperuserOrReadOnly
 from paypal.standard.forms import PayPalPaymentsForm
 from django.core.mail import EmailMessage
 from .utils import generate_payment_receipt
+from django.contrib.auth import logout
 
 
 
@@ -69,12 +70,22 @@ class LoginView(APIView):
             return response
 
         return Response({"error": "Invalid credentials"}, status=401)
-    
+
 class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        response = Response({"message": "Logout successful!"})
+        logout(request)  # ✅ Log out user
+        response = Response({"message": "Logout successful!"}, status=200)
+
+        # ✅ Remove cookies (JWT + Refresh Token)
         response.delete_cookie(settings.SIMPLE_JWT["AUTH_COOKIE"])
         response.delete_cookie("refresh_token")
+
+        # ✅ CORS: Ensure correct headers are set
+        response["Access-Control-Allow-Origin"] = "http://127.0.0.1:3000"
+        response["Access-Control-Allow-Credentials"] = "true"
+
         return response
 
 class CarListCreateAPIView(APIView):
