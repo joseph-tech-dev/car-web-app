@@ -32,7 +32,13 @@ INSTALLED_APPS = [
 PAYPAL_RECEIVER_EMAIL = "your-paypal-business-email@example.com"
 PAYPAL_TEST = True  # Change to False in production
 
-
+ALLOWED_HOSTS = [
+    '40d4-41-89-243-5.ngrok-free.app',
+    '127.0.0.1',
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://40d4-41-89-243-5.ngrok-free.app'
+]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
