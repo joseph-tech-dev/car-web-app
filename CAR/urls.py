@@ -32,6 +32,7 @@ urlpatterns = [
     path('scs/cars/<int:pk>/',CarDetailAPIView.as_view(), name='car-detail'),
     path('scs/car-images/',CarImageAPIView.as_view(), name='car-image'),
     path('scs/wishlist/',WishlistAPIView.as_view(), name='wishlist'),
+    path('scs/wishlist/<int:pk>/',WishlistAPIView.as_view(), name='wishlist-delete'),
     path('scs/car-comparison/',CarComparisonAPIView.as_view(), name='car-comparison'),
     path('scs/reviews/', ReviewList.as_view(), name='reviews'),
     path('scs/messages/', MessageAPIView.as_view(), name='messages'),
