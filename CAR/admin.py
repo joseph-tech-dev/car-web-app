@@ -45,7 +45,7 @@ admin.site.register(CarComparison, CarComparisonAdmin)
 
 class ReviewAdmin(admin.ModelAdmin):
     model = Review
-    list_display = ('user', 'car', 'rating', 'comment')
+    list_display = ('id','user','rating','review','created_at','updated_at')
 admin.site.register(Review, ReviewAdmin)
 
 class MessageAdmin(admin.ModelAdmin):

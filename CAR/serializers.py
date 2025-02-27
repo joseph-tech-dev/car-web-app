@@ -75,3 +75,26 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = ['transaction_id', 'buyer', 'car', 'price', 'created_at']
         read_only_fields = ['transaction_id', 'buyer', 'created_at']
+
+
+class ContactSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    subject = serializers.CharField(max_length=100)
+    message = serializers.CharField()
+
+
+# Review serializer
+from .models import Review
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()  # Display the username as a string instead of user ID
+    class Meta:
+        model = Review
+        fields = ['id', 'user','review', 'rating','created_at', 'updated_at']
+        read_only_fields = ['user']  # Prevent user from submitting their user ID in POST requests
+
+    def validate_rating(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5")
+        return value

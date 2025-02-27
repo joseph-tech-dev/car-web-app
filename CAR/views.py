@@ -26,8 +26,9 @@ from paypal.standard.forms import PayPalPaymentsForm
 from django.core.mail import EmailMessage
 from .utils import generate_payment_receipt
 from django.contrib.auth import logout
-
-
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from django.utils import timezone
+from .authentication import CustomJWTAuthentication
 
 
 User = get_user_model()
@@ -39,8 +40,7 @@ class RegisterUserAPIView(APIView):
             serializer.save()
             return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+        
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -54,7 +54,7 @@ class LoginView(APIView):
 
             response = Response({"message": "Login successful!"})
             response.set_cookie(
-                key=settings.SIMPLE_JWT["AUTH_COOKIE"],
+                key=settings.SIMPLE_JWT["AUTH_COOKIE_NAME"],
                 value=tokens["access"],
                 httponly=settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"],
                 secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"],
@@ -69,27 +69,44 @@ class LoginView(APIView):
             )
             return response
 
-        return Response({"error": "Invalid credentials"}, status=401)
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+@method_decorator(csrf_exempt, name='dispatch')
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        logout(request)  # ✅ Log out user
-        response = Response({"message": "Logout successful!"}, status=200)
+        # Force authentication manually
+        user, token = CustomJWTAuthentication().authenticate(request)
+        
+        if user is None:
+            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # ✅ Remove cookies (JWT + Refresh Token)
-        response.delete_cookie(settings.SIMPLE_JWT["AUTH_COOKIE"])
-        response.delete_cookie("refresh_token")
+        try:
+            logout(request)
 
-        # ✅ CORS: Ensure correct headers are set
-        response["Access-Control-Allow-Origin"] = "http://127.0.0.1:3000"
-        response["Access-Control-Allow-Credentials"] = "true"
+            refresh_token = request.COOKIES.get("refresh_token")
+            if refresh_token:
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except TokenError:
+                    return Response({"error": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        return response
+            response = Response({"message": "Logout successful!"}, status=status.HTTP_200_OK)
+            response.delete_cookie(settings.SIMPLE_JWT["AUTH_COOKIE_NAME"], samesite="Lax", secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"])
+            response.delete_cookie("refresh_token", samesite="Lax", secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"])
+            return response
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class CarListCreateAPIView(APIView):
-    #permission_classes = [IsSuperuserOrReadOnly]
+    permission_classes = [IsSuperuserOrReadOnly]
     
     def get(self, request):
         cars = Car.objects.all()
@@ -153,6 +170,11 @@ class WishlistAPIView(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        wishlist = get_object_or_404(Wishlist, pk=pk)
+        wishlist.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CarComparisonAPIView(APIView):
     #permission_classes = [IsAuthenticated]
@@ -322,3 +344,113 @@ class PaymentFailureAPIView(APIView):
         transaction.save()
 
         return Response({"message": "Payment failed"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+from django.core.mail import send_mail
+from django.conf import settings
+from .serializers import ContactSerializer
+
+class ContactAPIView(APIView):
+    
+    def post(self, request):
+        serializer = ContactSerializer(data=request.data)
+        if serializer.is_valid():
+            name = serializer.validated_data['name']
+            email = serializer.validated_data['email']
+            subject = serializer.validated_data['subject']
+            message = serializer.validated_data['message']
+            
+            # Prepare email content
+            email_message = f"Name: {name}\nEmail: {email}\nSubject: {subject}\n\nMessage:\n{message}"
+            
+            send_mail(
+                subject,
+                email_message,
+                settings.EMAIL_HOST_USER,
+                [settings.EMAIL_HOST_USER],  # Change this if you want to send to different email addresses
+                fail_silently=False,
+            )
+            
+            return Response({'message': 'Email sent successfully!'}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+class ReviewList(APIView):
+    #permission_classes = [AllowAny]  # Adjust based on your authorization needs
+
+    def get(self, request, product_id=None):
+        if product_id:
+            reviews = Review.objects.filter(product_id=product_id)
+        else:
+            reviews = Review.objects.all()
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        # Set the 'user' field to the logged-in user
+        if request.user.is_authenticated:
+            serializer = ReviewSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=request.user)  # Automatically set the user field
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Authentication required'}, status=status.HTTP_403_FORBIDDEN)
+
+class ReviewDetail(APIView):
+    #permission_classes = [AllowAny]  # Adjust based on your authorization needs
+
+    def get_object(self, review_id):
+        try:
+            return Review.objects.get(pk=review_id)
+        except Review.DoesNotExist:
+            return None
+
+    def get(self, request, review_id):
+        review = self.get_object(review_id)
+        if review:
+            serializer = ReviewSerializer(review)
+            return Response(serializer.data)
+        return Response({"error": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, review_id):
+        review = self.get_object(review_id)
+        if not review:
+            return Response({"error": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Add permission check here if needed
+        if request.user != review.user:  # Optionally restrict editing to the review's author
+            return Response({"error": "You do not have permission to update this review"}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ReviewSerializer(review, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, review_id):
+        review = self.get_object(review_id)
+        if not review:
+            return Response({"error": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Add permission check here if needed
+        if request.user != review.user:  # Optionally restrict deletion to the review's author
+            return Response({"error": "You do not have permission to delete this review"}, status=status.HTTP_403_FORBIDDEN)
+
+        review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+class DebugAuthView(APIView):
+    def get(self, request):
+        return Response({
+            "user": str(request.user),
+            "is_authenticated": request.user.is_authenticated
+        })

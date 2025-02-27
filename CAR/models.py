@@ -98,16 +98,18 @@ class CarComparison(models.Model):
         return f"{self.user.username} compared {self.car1.make} {self.car1.model} & {self.car2.make} {self.car2.model}"
 
 # Reviews & Ratings
+# reviews/models.py
+from django.conf import settings
+
 class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='reviews')
-    rating = models.IntegerField()
-    comment = models.TextField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Reference to your custom User model
+    review = models.TextField()
+    rating = models.PositiveIntegerField()  # Rating should be a positive integer
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.car.make} {self.car.model} ({self.rating}/5)"
-
+        return f'Review for Product {self.id} by {self.user.username}'
 # Messaging System (Buyer to Dealer)
 class Message(models.Model):
     message_id = models.CharField(primary_key=True, max_length=7, editable=False)
@@ -166,3 +168,6 @@ class Advertisement(models.Model):
 
     def __str__(self):
         return f"Ad for {self.car.make} {self.car.model} by {self.dealer.username}"
+
+
+

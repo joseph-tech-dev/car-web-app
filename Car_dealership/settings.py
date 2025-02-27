@@ -25,7 +25,8 @@ INSTALLED_APPS = [
     'CAR',
     'rest_framework',
     'corsheaders',
-    'paypal.standard.ipn'
+    'paypal.standard.ipn',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 # PayPal Settings
@@ -34,44 +35,59 @@ PAYPAL_TEST = True  # Change to False in production
 
 
 #CORS_ALLOW_ALL_ORIGINS = True #to be changed
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = True  # Must be true to allow cookies
 CORS_ALLOW_HEADERS = [
-    "Authorization",
-    "Content-Type",
+    "authorization",
+    "content-type",
+    "x-csrftoken",  # ✅ Allow CSRF token in headers
 ]
+
+
+CSRF_COOKIE_HTTPONLY = False  # ❌ Make sure this is False, otherwise JS can't access it
+CSRF_COOKIE_SAMESITE = "Lax"  # ✅ Allows CSRF cookies to be sent properly
+CSRF_COOKIE_SECURE = False  # ✅ Set to True if using HTTPS
+
+
+
 ALLOWED_HOSTS = [
     '40d4-41-89-243-5.ngrok-free.app',
     '127.0.0.1',
 ]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",  # Add your frontend URL here
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://127\.0\.0\.1:3000$",  # ✅ Regex-based CORS
+    r"^https://40d4-41-89-243-5\.ngrok-free\.app$",
+    r"^http://localhost:5173$"
 ]
+
 
 CSRF_TRUSTED_ORIGINS = [
     'https://40d4-41-89-243-5.ngrok-free.app',
     "http://127.0.0.1:3000",
+    "http://localhost:5173",
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'CAR.authentication.CustomJWTAuthentication',  # ✅ Use Custom Auth
     ),
 }
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
-    "AUTH_COOKIE": "access_token",  # Cookie name
+    "AUTH_COOKIE_NAME": "access_token",  # Cookie name
     "AUTH_COOKIE_HTTP_ONLY": True,  # Prevent JavaScript access
-    "AUTH_COOKIE_SECURE": True,  # Set to False for development, True for production (HTTPS)
+    "AUTH_COOKIE_SECURE": False,  # Set to False for development, True for production (HTTPS)
     "AUTH_COOKIE_SAMESITE": "Lax",  # Prevent CSRF attacks
 }
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",#
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # ✅ CSRF Middleware should be here
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'CAR.middleware.JWTAuthMiddleware', 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -195,3 +211,13 @@ JAZZMIN_UI_TWEAKS = {
 
 # Work on login logic,
 # Work on remain front-ends
+
+
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'predatormj.v3@gmail.com'  # Replace it with your actual Gmail address
+EMAIL_HOST_PASSWORD = '183ch1r0'  # Use an app password if 2FA is enabled
