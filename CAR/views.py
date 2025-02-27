@@ -171,10 +171,14 @@ class WishlistAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self, request, pk):
-        wishlist = get_object_or_404(Wishlist, pk=pk)
-        wishlist.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, car_id):
+        """Remove a car from the cart"""
+        try:
+            wishlist_item = Wishlist.objects.get(user=request.user, car_id=car_id)
+            wishlist_item.delete()
+            return Response({"message": "Car removed from cart"}, status=status.HTTP_204_NO_CONTENT)
+        except Wishlist.DoesNotExist:
+            return Response({"error": "Car not in cart"}, status=status.HTTP_404_NOT_FOUND)
 
 class CarComparisonAPIView(APIView):
     #permission_classes = [IsAuthenticated]
