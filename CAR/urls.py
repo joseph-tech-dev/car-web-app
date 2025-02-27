@@ -47,8 +47,6 @@ urlpatterns = [
     # Send Message
     path('scs/contact/', ContactAPIView.as_view(), name='contact_api'),  # Define the API endpoint
 
-    #debug
-    path("scs/debug-auth/", DebugAuthView.as_view(), name='auth'),
 ]
 
 

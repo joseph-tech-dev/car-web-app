@@ -445,12 +445,3 @@ class ReviewDetail(APIView):
     
 
 
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-class DebugAuthView(APIView):
-    def get(self, request):
-        return Response({
-            "user": str(request.user),
-            "is_authenticated": request.user.is_authenticated
-        })
