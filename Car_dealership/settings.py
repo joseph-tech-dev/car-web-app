@@ -220,4 +220,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'predatormj.v3@gmail.com'  # Replace it with your actual Gmail address
-EMAIL_HOST_PASSWORD = '183ch1r0'  # Use an app password if 2FA is enabled
+EMAIL_HOST_PASSWORD = 'qezrlbuarqbvezss '  # Use an app password if 2FA is enabled

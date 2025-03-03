@@ -18,7 +18,7 @@ from .views import(
     )
 from .views import InitiatePaymentAPIView, PaymentSuccessAPIView, PaymentFailureAPIView
 from .views import ContactAPIView
-from .views import ReviewList, ReviewDetail, DebugAuthView
+from .views import ReviewList, ReviewDetail
 
 urlpatterns = [
     path('contact/', ContactAPIView.as_view(), name='contact_api'),  # Define the API endpoint
@@ -29,7 +29,7 @@ urlpatterns = [
     path('scs/login/', LoginView.as_view(), name='login'),
     path('scs/logout/', LogoutView.as_view(), name='logout'),
     path('scs/cars/', CarListCreateAPIView.as_view(), name='car-list-create'),
-    path('scs/cars/<int:pk>/',CarDetailAPIView.as_view(), name='car-detail'),
+    path('scs/cars/<str:pk>/',CarDetailAPIView.as_view(), name='car-detail'),
     path('scs/car-images/',CarImageAPIView.as_view(), name='car-image'),
     path('scs/wishlist/',WishlistAPIView.as_view(), name='wishlist'),
     path('scs/wishlist/<int:pk>/',WishlistAPIView.as_view(), name='wishlist-delete'),
